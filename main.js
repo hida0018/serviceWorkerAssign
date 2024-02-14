@@ -1,12 +1,24 @@
-//register the service worker and add message event listener
-//listen for navigation popstate event
-//get the data for the page
-//add click listener to #cards
-
 document.addEventListener("DOMContentLoaded", () => {
   getData();
-  registerSW();
+
+  handleCardClicks();
+
+  receiveMessageFromSW();
+
+  // Get reference to the button
+  const showAllUsersButton = document.getElementById("showAllUsersButton");
+
+  // Add event listener to the button
+  showAllUsersButton.addEventListener("click", showAllUsers);
 });
+
+function showAllUsers() {
+  // Reset the URL hash
+  location.assign("#");
+
+  // Refresh the page
+  location.reload();
+}
 
 (function registerSW() {
   //IIFE
@@ -43,31 +55,83 @@ function getData() {
 }
 
 function createCard(user) {
-  console.log(user);
-  // We're creating a card element
+  const fullName = `${user.first_name} ${user.last_name}`;
+
   const card = document.createElement("li");
+
   card.classList.add("card");
 
-  const fullName = `${user.first_name} ${user.last_name}`;
+  card.setAttribute("data-uid", user.uid); // Set data-uid attribute to user's UID
 
   // Card Data Text
   card.innerHTML = `
-        <li data-uid="${user.uid}">
-          <img src="${user.avatar}" alt="${fullName}'s Avatar">
-          <h3>${fullName}</h3>
-          <p>Email: ${user.email}</p>
-          <!-- Add other user properties as needed -->
-        </li>
-      `;
+      <img src="${user.avatar}" alt="${fullName}'s Avatar">
+      <h3>${fullName}</h3>
+      <p>Email: ${user.email}</p>
+      
+    `;
+
+  card.addEventListener("click", function () {
+    showCards(user.uid);
+  });
 
   // Append card to cards UL
   document.getElementById("cards").appendChild(card);
 }
-//   function handleCardClicks() {}
 
-//   function showCards() {}
+function handleCardClicks() {
+  document.getElementById("cards").addEventListener("click", function (event) {
+    // Check if the clicked element is a card li element
+    if (
+      event.target.tagName === "LI" &&
+      event.target.classList.contains("card")
+    ) {
+      // Get the id from the data-uid attribute of the clicked card element
+      const clickedId = event.target.getAttribute("data-uid");
 
-//   function sendMessageToSW() {}
+      // Call the showCards function with the clickedId
+      showCards(clickedId);
+    }
+  });
+}
 
-//   function receiveMessageFromSW() {}
-// });
+function showCards(clickedId) {
+  // Get all cards & loop thru them
+  const cards = document.querySelectorAll(".card");
+  cards.forEach((card) => {
+    // Check if the card's data-uid matches the clickedId
+    if (card.dataset.uid === clickedId) {
+      card.style.display = "block"; // Show the clicked card
+    } else {
+      card.style.display = "none"; // Hide other cards
+    }
+  });
+
+  // Update URL hash with the clickedId
+  location.assign("#" + clickedId); // Update the URL hash
+
+  // Dispatch the popstate event manually
+  window.dispatchEvent(new Event("popstate"));
+
+  sendMessageToSW(clickedId);
+}
+
+function sendMessageToSW(hash) {
+  navigator.serviceWorker.controller.postMessage({ hash });
+}
+
+function receiveMessageFromSW() {
+  window.addEventListener("message", function (event) {
+    if (event.data && event.data.hash) {
+      const hash = event.data.hash;
+      // Call a function to handle the received hash from the service worker
+      handleReceivedHash(hash);
+    }
+  });
+}
+
+function handleReceivedHash(hash) {
+  // Handle the received hash as needed
+  // For example, update UI based on the hash value
+  console.log("Received hash from service worker:", hash);
+}
