@@ -5,10 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   receiveMessageFromSW();
 
-  // Get reference to the button
   const showAllUsersButton = document.getElementById("showAllUsersButton");
 
-  // Add event listener to the button
   showAllUsersButton.addEventListener("click", showAllUsers);
 });
 
@@ -30,7 +28,7 @@ function showAllUsers() {
   });
 
   navigator.serviceWorker.ready.then((reg) => {
-    console.log(reg.active); //the current active service worker
+    console.log(reg.active);
   });
 })();
 
@@ -89,7 +87,7 @@ function handleCardClicks() {
       // Get the id from the data-uid attribute of the clicked card element
       const clickedId = event.target.getAttribute("data-uid");
 
-      // Call the showCards function with the clickedId
+      // call the showCards function with the clickedId
       showCards(clickedId);
     }
   });
@@ -99,7 +97,7 @@ function showCards(clickedId) {
   // Get all cards & loop thru them
   const cards = document.querySelectorAll(".card");
   cards.forEach((card) => {
-    // Check if the card's data-uid matches the clickedId
+    // Check if the card's data uid matches the clickedId
     if (card.dataset.uid === clickedId) {
       card.style.display = "block"; // Show the clicked card
     } else {
@@ -108,9 +106,9 @@ function showCards(clickedId) {
   });
 
   // Update URL hash with the clickedId
-  location.assign("#" + clickedId); // Update the URL hash
+  location.assign("#" + clickedId);
 
-  // Dispatch the popstate event manually
+  // Next is the popstate event
   window.dispatchEvent(new Event("popstate"));
 
   sendMessageToSW(clickedId);
@@ -131,7 +129,7 @@ function receiveMessageFromSW() {
 }
 
 function handleReceivedHash(hash) {
-  // Handle the received hash as needed
-  // For example, update UI based on the hash value
+  // Handle the received hash.. im not sure how to implement this Professor
+
   console.log("Received hash from service worker:", hash);
 }
